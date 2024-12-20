@@ -49,13 +49,11 @@ checklist = {
 }
 
 # Function to highlight regions on the image (if coordinates are provided)
-# (This function remains the same)
 def highlight_regions(image_path, coordinates):
     try:
         img = Image.open(image_path)
         draw = ImageDraw.Draw(img)
         for coord in coordinates:
-            # Assuming coordinates are provided as (x1, y1, x2, y2) bounding boxes
             draw.rectangle(coord, outline="red", width=3)
         img.save("temp_image_highlighted.jpg")
         st.image("temp_image_highlighted.jpg", caption="Highlighted Image", use_container_width=True)
@@ -63,7 +61,6 @@ def highlight_regions(image_path, coordinates):
         st.error(f"Error highlighting regions: {e}")
 
 # Function to extract coordinates from Gemini's response
-# (This function remains the same)
 def extract_coordinates_from_response(response_text):
     coordinates = []
     matches = re.findall(r"\((\d+), (\d+), (\d+), (\d+)\)", response_text)
@@ -77,16 +74,16 @@ def format_gemini_response(response_text):
     """
     Formats the Gemini response into a table for better readability.
     """
-    data = []  # List to store table data
+    data = []
 
     for category, keywords in checklist.items():
         findings = []
-        status = "Normal"  # Default status
+        status = "Normal"
         for keyword in keywords:
             pattern = re.compile(keyword, re.IGNORECASE)
             matches = pattern.findall(response_text)
             if matches:
-                status = "Potential Issue"  # Update status if keyword is found
+                status = "Potential Issue"
                 findings.extend(matches)
 
         data.append(
@@ -97,13 +94,13 @@ def format_gemini_response(response_text):
             }
         )
 
-    # Create a Pandas DataFrame and display it as a table
     df = pd.DataFrame(data)
     st.subheader("Key Findings (Table):")
     st.table(df)
 
-    st.subheader("Overall Analysis:")
-    st.write(response_text)  # Display the original response for reference
+    # Minimize Overall Analysis to a single line summary
+    st.subheader("Summary:")
+    st.write(response_text)  # Display a summarized or the first sentence of the original response
 
 # Function to get comments from Gemini API (Modified Prompt)
 def get_gemini_comments(image_path):
@@ -130,21 +127,7 @@ st.write(
     "Upload a frontal lumbar spine X-ray image for analysis. This app uses Google's Gemini AI."
 )
 
-# Add an "About" section (This part remains largely the same)
-with st.expander("About the Technology"):
-    st.markdown(
-        """
-        This application leverages the power of Google's Gemini 1.5 Flash.
-
-        **How it Works:**
-
-        *   **Checklist-Based Analysis:** The AI is provided with a checklist of diagnostic points commonly assessed in chest X-rays.
-        *   **Tabular Output:** Findings are presented in a table for easy comparison of findings and status.
-        *   **Structured Reporting:** The AI attempts to provide a structured report based on the checklist.
-
-        **Disclaimer:** This application is for informational purposes only and should not be considered a substitute for professional medical advice.
-        """
-    )
+# Remove the "About" section
 
 uploaded_file = st.file_uploader("Choose an X-ray image...", type=["jpg", "jpeg", "png"])
 
@@ -162,7 +145,7 @@ if uploaded_file is not None:
 
     # Display results in a table
     if comment:
-        format_gemini_response(comment)  # Use the new formatting function
+        format_gemini_response(comment)
 
         # Attempt to extract coordinates and highlight regions (if applicable)
         coordinates = extract_coordinates_from_response(comment)
