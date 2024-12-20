@@ -3,6 +3,7 @@ import google.generativeai as genai
 from PIL import Image, ImageDraw
 import os
 import re
+import pandas as pd
 
 # Configure API Key using Streamlit Secrets
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
@@ -48,7 +49,7 @@ checklist = {
 }
 
 # Function to highlight regions on the image (if coordinates are provided)
-# (This function remains the same as in the previous responses)
+# (This function remains the same)
 def highlight_regions(image_path, coordinates):
     try:
         img = Image.open(image_path)
@@ -62,7 +63,7 @@ def highlight_regions(image_path, coordinates):
         st.error(f"Error highlighting regions: {e}")
 
 # Function to extract coordinates from Gemini's response
-# (This function remains the same as in the previous responses)
+# (This function remains the same)
 def extract_coordinates_from_response(response_text):
     coordinates = []
     matches = re.findall(r"\((\d+), (\d+), (\d+), (\d+)\)", response_text)
@@ -71,36 +72,38 @@ def extract_coordinates_from_response(response_text):
         coordinates.append((x1, y1, x2, y2))
     return coordinates
 
-# Function to format the Gemini response based on the checklist
+# Function to format the Gemini response into a table
 def format_gemini_response(response_text):
     """
-    Formats the Gemini response, highlighting findings based on the checklist.
+    Formats the Gemini response into a table for better readability.
     """
-    st.subheader("Key Findings:")
+    data = []  # List to store table data
 
     for category, keywords in checklist.items():
-        st.markdown(f"**{category}:**")
-        category_mentioned = False  # Flag to track if the category is mentioned in the response
-
+        findings = []
+        status = "Normal"  # Default status
         for keyword in keywords:
             pattern = re.compile(keyword, re.IGNORECASE)
             matches = pattern.findall(response_text)
-
             if matches:
-                category_mentioned = True  # Set the flag
-                for match in matches:
-                    # Highlight in red if there's a potential issue
-                    st.markdown(f"<span style='color:red'>- {match}</span>", unsafe_allow_html=True)
+                status = "Potential Issue"  # Update status if keyword is found
+                findings.extend(matches)
 
-        if not category_mentioned:
-            # If the category was not mentioned, assume it's normal
-            st.markdown("- Normal (no issues detected in this category)")
-        elif all(keyword not in response_text.lower() for keyword in keywords):
-            # If the category was mentioned but no keywords were found, it's likely normal
-            st.markdown("- Normal findings in this category")
+        data.append(
+            {
+                "Category": category,
+                "Findings": ", ".join(findings) if findings else "No issues detected",
+                "Status": status,
+            }
+        )
+
+    # Create a Pandas DataFrame and display it as a table
+    df = pd.DataFrame(data)
+    st.subheader("Key Findings (Table):")
+    st.table(df)
 
     st.subheader("Overall Analysis:")
-    st.write(response_text)
+    st.write(response_text)  # Display the original response for reference
 
 # Function to get comments from Gemini API (Modified Prompt)
 def get_gemini_comments(image_path):
@@ -136,7 +139,7 @@ with st.expander("About the Technology"):
         **How it Works:**
 
         *   **Checklist-Based Analysis:** The AI is provided with a checklist of diagnostic points commonly assessed in chest X-rays.
-        *   **Issue Highlighting:** Findings related to potential issues are highlighted in red, while normal findings are displayed in black.
+        *   **Tabular Output:** Findings are presented in a table for easy comparison of findings and status.
         *   **Structured Reporting:** The AI attempts to provide a structured report based on the checklist.
 
         **Disclaimer:** This application is for informational purposes only and should not be considered a substitute for professional medical advice.
@@ -157,7 +160,7 @@ if uploaded_file is not None:
     with st.spinner("Analyzing..."):
         comment = get_gemini_comments("temp_image.jpg")
 
-    # Display results
+    # Display results in a table
     if comment:
         format_gemini_response(comment)  # Use the new formatting function
 
