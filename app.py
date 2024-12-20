@@ -98,9 +98,11 @@ def format_gemini_response(response_text):
     st.subheader("Key Findings (Table):")
     st.table(df)
 
-    # Minimize Overall Analysis to a single line summary
+    # Minimize Overall Analysis to a few lines (less than 5)
     st.subheader("Summary:")
-    st.write(response_text)  # Display a summarized or the first sentence of the original response
+    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', response_text)
+    summary = " ".join(sentences[:3])  # Join the first 3 sentences for the summary
+    st.write(summary)
 
 # Function to get comments from Gemini API (Modified Prompt)
 def get_gemini_comments(image_path):
@@ -111,7 +113,7 @@ def get_gemini_comments(image_path):
             [
                 "You are an AI medical expert trained on a massive dataset of X-rays. Analyze this X-ray and provide a structured report based on the following criteria: "
                 + ", ".join(checklist.keys())
-                + ". For each point, indicate if there are any findings suggestive of a problem or if it appears normal. Use medical terminology.",
+                + ". For each point, indicate if there are any findings suggestive of a problem or if it appears normal. Use medical terminology. also provide a short summery",
                 image,
             ]
         )
@@ -126,8 +128,6 @@ st.title("Lumbar Spine X-ray Analysis (using Gemini)")
 st.write(
     "Upload a frontal lumbar spine X-ray image for analysis. This app uses Google's Gemini AI."
 )
-
-# Remove the "About" section
 
 uploaded_file = st.file_uploader("Choose an X-ray image...", type=["jpg", "jpeg", "png"])
 
