@@ -18,7 +18,7 @@ def format_gemini_response(response_text):
     alignment_matches = re.findall(r"alignment:.*?\.", response_text, re.IGNORECASE)
     disc_matches = re.findall(r"disc.*?:.*?\.", response_text, re.IGNORECASE)
     curvature_matches = re.findall(r"curvature:.*?\.", response_text, re.IGNORECASE)
-    
+
     # 2. Create a dictionary to store findings
     findings = {}
     if vertebrae_matches:
@@ -40,7 +40,7 @@ def format_gemini_response(response_text):
 
     # 4. Add further analysis or summary if needed
     st.subheader("Overall Analysis:")
-    st.write(response_text) # Display the original response for reference
+    st.write(response_text)  # Display the original response for reference
 
 # Function to get comments from Gemini API
 def get_gemini_comments(image_path):
@@ -49,7 +49,7 @@ def get_gemini_comments(image_path):
         image = Image.open(image_path)
         response = model.generate_content(
             [
-                "You are a medical expert. Analyze this lumbar spine X-ray and provide comments, specifically focusing on the presence and severity of scoliosis. Use medical terms and the output should highlight the key findings and a small summery",
+                "You are an AI medical expert trained on a massive dataset of lumbar spine X-rays and their corresponding radiological reports. Analyze this X-ray as if you were comparing it to your learned knowledge of normal and abnormal spinal anatomy, derived from analyzing thousands of peer images. Provide a structured report, highlighting key findings and comparing them to expected normal values. Use medical terminology.",
                 image,
             ]
         )
@@ -62,8 +62,30 @@ def get_gemini_comments(image_path):
 # Streamlit Interface
 st.title("Lumbar Spine X-ray Analysis (using Gemini)")
 st.write(
-    "Upload a frontal lumbar spine X-ray image for analysis. This app uses Google's Gemini through the google-generativeai library."
+    "Upload a frontal lumbar spine X-ray image for analysis. This app uses Google's Gemini AI, which has been trained on a vast dataset of medical images."
 )
+
+# Add an "About" section
+with st.expander("About the Technology"):
+    st.markdown(
+        """
+        This application leverages the power of Google's Gemini 1.5 Flash, a large language model with advanced image understanding capabilities.
+
+        **How it Works:**
+
+        *   **Data-Driven Analysis:** Gemini has been trained on a massive dataset of images, including X-rays, and associated medical reports. It has learned to identify patterns and relationships between image features and medical conditions.
+        *   **Comparative Approach:** When you upload an X-ray, Gemini analyzes it by comparing it to its internal representation of normal and abnormal spinal anatomy, derived from its training data. This is similar to how a radiologist would compare an X-ray to their knowledge gained from studying many examples.
+        *   **Structured Reporting:** The AI is prompted to provide a structured report, highlighting key findings and comparing them to expected normal values. This facilitates a more systematic and objective analysis.
+
+        **Engineering Science Principles:**
+
+        *   **Machine Learning:** The core of this application is based on machine learning, a field of computer science that enables systems to learn from data without explicit programming.
+        *   **Pattern Recognition:** Gemini uses pattern recognition algorithms to identify relevant features in the X-ray images.
+        *   **Statistical Inference:** The AI draws conclusions based on statistical patterns learned from the training data.
+
+        **Disclaimer:** This application is for informational purposes only and should not be considered a substitute for professional medical advice.
+        """
+    )
 
 uploaded_file = st.file_uploader("Choose an X-ray image...", type=["jpg", "jpeg", "png"])
 
