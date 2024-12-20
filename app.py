@@ -9,7 +9,7 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 # Function to get comments from Gemini API
 def get_gemini_comments(image_path):
     try:
-        model = genai.GenerativeModel('gemini-pro-vision')
+        model = genai.GenerativeModel('gemini-1.5-flash')  # Updated model name
         image = Image.open(image_path)
         response = model.generate_content(
             [
@@ -37,7 +37,7 @@ if uploaded_file is not None:
         f.write(uploaded_file.getbuffer())
 
     # Display the image
-    st.image("temp_image.jpg", caption="Uploaded Image", use_column_width=True)
+    st.image("temp_image.jpg", caption="Uploaded Image", use_container_width=True)  # Updated parameter
 
     # Analyze
     with st.spinner("Analyzing..."):
