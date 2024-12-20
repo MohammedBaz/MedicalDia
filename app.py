@@ -1,13 +1,12 @@
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
-import google.auth
+import os
 
-# --- Configure the API key using genai.configure ---
-GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY") # Get API key from environment variable
-genai.configure(api_key=GOOGLE_API_KEY)
+# Configure API Key using Streamlit Secrets
+genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
-# --- Function to get comments from Gemini API ---
+# Function to get comments from Gemini API
 def get_gemini_comments(image_path):
     try:
         model = genai.GenerativeModel('gemini-pro-vision')
@@ -24,7 +23,7 @@ def get_gemini_comments(image_path):
         st.error(f"Error calling Gemini API: {e}")
         return None
 
-# --- Streamlit Interface ---
+# Streamlit Interface
 st.title("Lumbar Spine X-ray Analysis (using Gemini)")
 st.write(
     "Upload a frontal lumbar spine X-ray image for analysis. This app uses Google's Gemini through the google-generativeai library."
@@ -48,3 +47,6 @@ if uploaded_file is not None:
     if comment:
         st.subheader("Analysis:")
         st.write(f"**Comment:** {comment}")
+
+    # Clean up the temporary file
+    os.remove("temp_image.jpg")
